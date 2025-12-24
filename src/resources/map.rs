@@ -2,6 +2,7 @@
 
 use bevy::prelude::*;
 use std::collections::HashMap;
+use bracket_pathfinding::prelude::*;
 
 /// Types of tiles in the game world
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -96,5 +97,39 @@ impl CurrentMap {
     /// Check if there's a blocking entity at this position
     pub fn is_blocked(&self, pos: &Position) -> bool {
         !self.is_walkable(pos.x, pos.y)
+    }
+}
+
+// ============================================================================
+// BRACKET-PATHFINDING TRAIT IMPLEMENTATIONS
+// ============================================================================
+
+impl BaseMap for CurrentMap {
+    fn is_opaque(&self, idx: usize) -> bool {
+        // Convert 1D index to 2D coordinates
+        let x = (idx % self.width) as i32;
+        let y = (idx / self.width) as i32;
+
+        // Walls block vision
+        !self.is_walkable(x, y)
+    }
+
+    fn get_available_exits(&self, _idx: usize) -> SmallVec<[(usize, f32); 10]> {
+        // Not needed for FOV, only for pathfinding
+        SmallVec::new()
+    }
+}
+
+impl Algorithm2D for CurrentMap {
+    fn dimensions(&self) -> Point {
+        Point::new(self.width, self.height)
+    }
+
+    fn index_to_point2d(&self, idx: usize) -> Point {
+        Point::new(idx % self.width, idx / self.width)
+    }
+
+    fn point2d_to_index(&self, pt: Point) -> usize {
+        (pt.y as usize * self.width) + pt.x as usize
     }
 }

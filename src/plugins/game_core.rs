@@ -1,9 +1,14 @@
 /// Core game plugin - Main gameplay systems
 
 use bevy::prelude::*;
-use crate::components::{Player, Position, Renderable};
-use crate::resources::CurrentMap;
-use crate::systems::{player_input_system, apply_movement_system, camera_follow_system};
+use crate::components::{Player, Position, Renderable, Viewshed};
+use crate::resources::{CurrentMap, VisibilityMap};
+use crate::systems::{
+    player_input_system, apply_movement_system, camera_follow_system,
+    calculate_fov_system, update_visibility_map_system,
+    apply_tile_visibility_system, hide_entities_outside_fov_system,
+    MapTile, TileBaseColor,
+};
 use crate::systems::movement::PendingMovement;
 use crate::states::GameState;
 use crate::constants::*;
@@ -21,6 +26,7 @@ impl Plugin for GameCorePlugin {
             // Resources
             .init_resource::<PendingMovement>()
             .init_resource::<GameInitialized>()
+            .init_resource::<VisibilityMap>()
             // One-time setup when first entering Playing state
             .add_systems(OnEnter(GameState::Playing), initialize_game)
             // Update systems (run during Playing state)
@@ -29,7 +35,12 @@ impl Plugin for GameCorePlugin {
                 apply_movement_system,
                 camera_follow_system,
                 update_sprite_positions,
-            ).run_if(in_state(GameState::Playing)));
+                // FOV systems (run after movement)
+                calculate_fov_system,
+                update_visibility_map_system,
+                apply_tile_visibility_system,
+                hide_entities_outside_fov_system,
+            ).chain().run_if(in_state(GameState::Playing)));
     }
 }
 
@@ -51,14 +62,18 @@ fn initialize_game(
     for y in 0..map.height {
         for x in 0..map.width {
             let tile_type = map.tiles[y][x];
-            let color = match tile_type {
+            let base_color = match tile_type {
                 crate::resources::TileType::Floor => COLOR_FLOOR,
                 crate::resources::TileType::Wall => COLOR_WALL,
             };
 
             commands.spawn((
+                MapTile {
+                    position: Position::new(x as i32, y as i32),
+                },
+                TileBaseColor(base_color),
                 Sprite {
-                    color,
+                    color: Color::srgb(0.0, 0.0, 0.0), // Start black (unseen)
                     custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
                     ..default()
                 },
@@ -70,7 +85,7 @@ fn initialize_game(
             ));
         }
     }
-    info!("Map tiles rendered!");
+    info!("Map tiles rendered with FOV support!");
 
     // Now insert the map resource
     commands.insert_resource(map);
@@ -81,6 +96,7 @@ fn initialize_game(
         Player,
         Position::new(10, 10),
         Renderable::new(COLOR_PLAYER),
+        Viewshed::new(FOV_RADIUS),
         Sprite {
             color: COLOR_PLAYER,
             custom_size: Some(Vec2::new(TILE_SIZE, TILE_SIZE)),
@@ -92,7 +108,7 @@ fn initialize_game(
             Z_LAYER_CHARACTERS,
         ),
     ));
-    info!("Player spawned at (10, 10)");
+    info!("Player spawned at (10, 10) with FOV radius {}", FOV_RADIUS);
 
     // Mark as initialized
     initialized.0 = true;

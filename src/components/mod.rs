@@ -3,7 +3,9 @@
 /// Components are data attached to entities.
 
 pub mod actor;
+pub mod viewshed;
 
 pub use actor::{Player, Renderable};
+pub use viewshed::Viewshed;
 // Re-export Position from resources for convenience
 pub use crate::resources::map::Position;
