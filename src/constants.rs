@@ -21,9 +21,9 @@ pub const PLAYER_STARTING_HEALTH: i32 = 100;
 pub const PLAYER_STARTING_ACTION_POINTS: i32 = 1;
 pub const FOV_RADIUS: i32 = 8;
 
-// Colors
-pub const COLOR_FLOOR: Color = Color::srgb(0.3, 0.3, 0.4);  // Lighter dark blue-gray floor
-pub const COLOR_WALL: Color = Color::srgb(0.6, 0.5, 0.4);   // Brown-gray walls (more visible)
+// Colors (brightened significantly for visibility against black background)
+pub const COLOR_FLOOR: Color = Color::srgb(0.7, 0.7, 0.8);  // Bright blue-gray floor
+pub const COLOR_WALL: Color = Color::srgb(0.9, 0.8, 0.7);   // Bright tan walls
 pub const COLOR_PLAYER: Color = Color::srgb(0.0, 0.9, 0.0); // Bright green player
 pub const COLOR_ENEMY: Color = Color::srgb(0.9, 0.0, 0.0);  // Bright red enemies
 pub const COLOR_FOV_VISIBLE: Color = Color::srgb(1.0, 1.0, 1.0);

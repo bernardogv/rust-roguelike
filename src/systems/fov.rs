@@ -29,9 +29,8 @@ pub fn calculate_fov_system(
     map: Res<CurrentMap>,
 ) {
     for (pos, mut viewshed) in query.iter_mut() {
-        if !viewshed.dirty {
-            continue;
-        }
+        // Changed<Position> already filters when to recalculate
+        // No need for dirty flag check here
 
         // Convert Position to bracket-lib Point
         let origin = Point::new(pos.x, pos.y);
@@ -48,8 +47,6 @@ pub fn calculate_fov_system(
             .iter()
             .map(|pt| Position::new(pt.x, pt.y))
             .collect();
-
-        viewshed.dirty = false;
 
         info!("FOV calculated at ({}, {}): {} tiles visible",
               pos.x, pos.y, viewshed.visible_tiles.len());
@@ -85,7 +82,7 @@ pub fn apply_tile_visibility_system(
     visibility_map: Res<VisibilityMap>,
     mut query: Query<(&MapTile, &TileBaseColor, &mut Sprite)>,
 ) {
-    // Only run when visibility map changes
+    // Only run when visibility map changes (optimization)
     if !visibility_map.is_changed() {
         return;
     }
@@ -95,11 +92,11 @@ pub fn apply_tile_visibility_system(
 
         match visibility {
             VisibilityState::Visible => {
-                // Full original color
+                // Use actual tile colors (brightened in constants.rs)
                 sprite.color = base_color.0;
             }
             VisibilityState::Explored => {
-                // Multiply color by 0.5 for dimmed effect
+                // Dimmed to 50% for fog of war effect
                 let c = base_color.0.to_srgba();
                 sprite.color = Color::srgb(
                     c.red * 0.5,
