@@ -19,6 +19,7 @@ pub const CAMERA_FOLLOW_SPEED: f32 = 5.0;
 // Game balance
 pub const PLAYER_STARTING_HEALTH: i32 = 100;
 pub const PLAYER_STARTING_ACTION_POINTS: i32 = 1;
+pub const MOVEMENT_ACTION_COST: i32 = 1;
 pub const FOV_RADIUS: i32 = 8;
 
 // Colors (brightened significantly for visibility against black background)

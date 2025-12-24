@@ -4,6 +4,8 @@
 
 pub mod map;
 pub mod visibility;
+pub mod action_points;
 
 pub use map::{TileType, CurrentMap};
 pub use visibility::{VisibilityState, VisibilityMap};
+pub use action_points::PlayerActionPoints;

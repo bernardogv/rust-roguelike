@@ -2,8 +2,8 @@
 
 use bevy::prelude::*;
 use crate::components::{Player, Position};
-use crate::resources::CurrentMap;
-use crate::constants::CAMERA_FOLLOW_SPEED;
+use crate::resources::{CurrentMap, PlayerActionPoints};
+use crate::constants::{CAMERA_FOLLOW_SPEED, MOVEMENT_ACTION_COST};
 
 /// Stores pending movement for the player
 #[derive(Resource, Default)]
@@ -35,14 +35,22 @@ pub fn player_input_system(
     }
 }
 
-/// System to apply movement with collision detection
+/// System to apply movement with collision detection and action point consumption
 pub fn apply_movement_system(
     mut query: Query<&mut Position, With<Player>>,
     pending_movement: Res<PendingMovement>,
     map: Res<CurrentMap>,
+    mut action_points: ResMut<PlayerActionPoints>,
 ) {
     // Only move if there's pending movement
     if pending_movement.dx == 0 && pending_movement.dy == 0 {
+        return;
+    }
+
+    // Check if player can afford the movement
+    if !action_points.can_afford(MOVEMENT_ACTION_COST) {
+        info!("Not enough action points to move! ({}/{})",
+              action_points.current, action_points.max);
         return;
     }
 
@@ -54,7 +62,12 @@ pub fn apply_movement_system(
         if map.is_walkable(new_x, new_y) {
             pos.x = new_x;
             pos.y = new_y;
-            info!("Player moved to ({}, {})", pos.x, pos.y);
+
+            // Spend action points for successful movement
+            action_points.spend(MOVEMENT_ACTION_COST);
+
+            info!("Player moved to ({}, {}) - Action points: {}/{}",
+                  pos.x, pos.y, action_points.current, action_points.max);
         } else {
             info!("Blocked! Cannot move to ({}, {})", new_x, new_y);
         }

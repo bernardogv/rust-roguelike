@@ -2,15 +2,17 @@
 
 use bevy::prelude::*;
 use crate::components::{Player, Position, Renderable, Viewshed};
-use crate::resources::{CurrentMap, VisibilityMap};
+use crate::resources::{CurrentMap, VisibilityMap, PlayerActionPoints};
 use crate::systems::{
     player_input_system, apply_movement_system, camera_follow_system,
     calculate_fov_system, update_visibility_map_system,
     apply_tile_visibility_system, hide_entities_outside_fov_system,
+    check_turn_end_system, start_player_turn_system, enemy_turn_system,
+    enemy_action_system,
     MapTile, TileBaseColor,
 };
 use crate::systems::movement::PendingMovement;
-use crate::states::GameState;
+use crate::states::{GameState, TurnState};
 use crate::constants::*;
 
 /// Resource to track if game has been initialized
@@ -23,15 +25,20 @@ pub struct GameCorePlugin;
 impl Plugin for GameCorePlugin {
     fn build(&self, app: &mut App) {
         app
+            // State management
+            .init_state::<TurnState>()
             // Resources
             .init_resource::<PendingMovement>()
             .init_resource::<GameInitialized>()
             .init_resource::<VisibilityMap>()
+            .init_resource::<PlayerActionPoints>()
             // One-time setup when first entering Playing state
             .add_systems(OnEnter(GameState::Playing), initialize_game)
-            // Update systems (run during Playing state)
+            // Player turn systems (run during Playing AND PlayerTurn state)
             .add_systems(Update, (
+                // Input capture runs every frame (responsive feel)
                 player_input_system,
+                // Movement only executes during PlayerTurn
                 apply_movement_system,
                 camera_follow_system,
                 update_sprite_positions,
@@ -40,7 +47,16 @@ impl Plugin for GameCorePlugin {
                 update_visibility_map_system,
                 apply_tile_visibility_system,
                 hide_entities_outside_fov_system,
-            ).chain().run_if(in_state(GameState::Playing)));
+                // Check if turn should end
+                check_turn_end_system,
+            ).chain().run_if(in_state(GameState::Playing).and(in_state(TurnState::PlayerTurn))))
+            // Enemy turn systems
+            .add_systems(Update, (
+                enemy_action_system,
+                enemy_turn_system,
+            ).chain().run_if(in_state(GameState::Playing).and(in_state(TurnState::EnemyTurn))))
+            // Turn transition events
+            .add_systems(OnEnter(TurnState::PlayerTurn), start_player_turn_system);
     }
 }
 
