@@ -22,6 +22,23 @@ pub const PLAYER_STARTING_ACTION_POINTS: i32 = 1;
 pub const MOVEMENT_ACTION_COST: i32 = 1;
 pub const FOV_RADIUS: i32 = 8;
 
+// Combat settings
+pub const ATTACK_ACTION_COST: i32 = 1;
+pub const BASE_HIT_CHANCE: u32 = 75;
+pub const DAMAGE_VARIANCE: i32 = 2;
+
+// Player combat stats
+pub const PLAYER_ATTACK_POWER: i32 = 10;
+pub const PLAYER_DEFENSE: i32 = 2;
+
+// Enemy combat stats
+pub const ENEMY_STARTING_HEALTH: i32 = 30;
+pub const ENEMY_ATTACK_POWER: i32 = 8;
+pub const ENEMY_DEFENSE: i32 = 1;
+pub const ENEMY_FOV_RADIUS: i32 = 6;
+pub const ENEMY_MIN_COUNT: usize = 3;
+pub const ENEMY_MAX_COUNT: usize = 5;
+
 // Colors (brightened significantly for visibility against black background)
 pub const COLOR_FLOOR: Color = Color::srgb(0.7, 0.7, 0.8);  // Bright blue-gray floor
 pub const COLOR_WALL: Color = Color::srgb(0.9, 0.8, 0.7);   // Bright tan walls
