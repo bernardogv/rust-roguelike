@@ -1,0 +1,28 @@
+[package]
+name = "rust-roguelike"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = { version = "0.15", default-features = true }
+bevy_ecs_tilemap = "0.15"
+bracket-pathfinding = "0.8"
+rand = "0.8"
+serde = { version = "1.0", features = ["derive"] }
+
+[dev-dependencies]
+bevy = { version = "0.15", features = ["dynamic_linking"] }
+
+# Enable optimizations for dependencies in dev mode for better performance
+[profile.dev.package."*"]
+opt-level = 3
+
+# Fast compile times for development
+[profile.dev]
+opt-level = 1
+
+# Full optimizations for release
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1

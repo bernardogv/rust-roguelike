@@ -1,0 +1,29 @@
+# Rust build artifacts
+/target/
+**/*.rs.bk
+*.pdb
+
+# Cargo lock file (optional - uncomment if you want to ignore it)
+# Cargo.lock
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Bevy / Game specific
+*.log
+
+# Debug files
+debug/
+*.dSYM/
+
+# Claude Flow coordination files (optional - can keep for tracking)
+# .claude-flow/
+
+# Temporary files
+*.tmp
+*.temp
